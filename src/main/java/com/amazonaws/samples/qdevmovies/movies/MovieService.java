@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
@@ -68,5 +69,64 @@ public class MovieService {
             return Optional.empty();
         }
         return Optional.ofNullable(movieMap.get(id));
+    }
+
+    /**
+     * Ahoy matey! Search for treasure (movies) in our vast collection!
+     * This method filters movies based on name, id, and genre parameters.
+     * 
+     * @param name Movie name to search for (case-insensitive partial match)
+     * @param id Specific movie ID to find
+     * @param genre Genre to filter by (case-insensitive partial match)
+     * @return List of movies matching the search criteria, or empty list if no treasure found
+     */
+    public List<Movie> searchMovies(String name, Long id, String genre) {
+        logger.info("Arrr! Searching for movie treasures with name: '{}', id: {}, genre: '{}'", name, id, genre);
+        
+        List<Movie> searchResults = movies.stream()
+            .filter(movie -> matchesSearchCriteria(movie, name, id, genre))
+            .collect(Collectors.toList());
+            
+        logger.info("Ahoy! Found {} movie treasures matching yer search criteria", searchResults.size());
+        return searchResults;
+    }
+
+    /**
+     * Helper method to check if a movie matches the search criteria
+     * Arrr! This crew member does the heavy lifting for our treasure hunt!
+     */
+    private boolean matchesSearchCriteria(Movie movie, String name, Long id, String genre) {
+        // If searching by ID, it must match exactly
+        if (id != null && !movie.getId().equals(id)) {
+            return false;
+        }
+        
+        // If searching by name, do case-insensitive partial match
+        if (name != null && !name.trim().isEmpty()) {
+            if (!movie.getMovieName().toLowerCase().contains(name.toLowerCase().trim())) {
+                return false;
+            }
+        }
+        
+        // If searching by genre, do case-insensitive partial match
+        if (genre != null && !genre.trim().isEmpty()) {
+            if (!movie.getGenre().toLowerCase().contains(genre.toLowerCase().trim())) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Get all available genres from our treasure chest
+     * Useful for populating search forms, ye savvy?
+     */
+    public List<String> getAllGenres() {
+        return movies.stream()
+            .map(Movie::getGenre)
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList());
     }
 }
